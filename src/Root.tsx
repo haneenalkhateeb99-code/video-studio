@@ -22,7 +22,7 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="PackedColumnLab13"
         component={PackedColumnLab}
-        durationInFrames={LAB13_DURATION} // ≈ 149 s × 30 fps
+        durationInFrames={LAB13_DURATION} // follows the voice-over length
         fps={30}
         width={1920}
         height={1080}

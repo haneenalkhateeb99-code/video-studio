@@ -2,6 +2,7 @@ import React from "react";
 import { AbsoluteFill, Img, staticFile, useCurrentFrame } from "remotion";
 import { MiniColumn, Mode } from "./MiniColumn";
 import { C, FONT, Pt, appear, fadeUp, polyD, ramp } from "./theme";
+import { at, cues } from "./timing";
 import { Arrow, Card, Slide, T } from "./ui";
 
 /* ───────────────────────── 7. Manometer ───────────────────────── */
@@ -89,8 +90,9 @@ const ManometerDrawing: React.FC<{ dh: number; air: number }> = ({ dh, air }) =>
 
 export const ManometerScene: React.FC = () => {
   const f = useCurrentFrame();
-  const air = ramp(f, 90, 130, 0, 0.7);
-  const dh = 170 * appear(f, 100, 70);
+  const q = cues("manometer");
+  const air = ramp(f, q.s.m1, q.s.m1 + 40, 0, 0.7);
+  const dh = 170 * appear(f, q.s.m1 + 20, 110);
   const formula = (start: number, children: React.ReactNode, color: string = C.title, size = 44) => (
     <div dir="ltr" style={{ fontSize: size, fontWeight: 800, color, textAlign: "center", ...fadeUp(f, start) }}>
       {children}
@@ -102,11 +104,13 @@ export const ManometerScene: React.FC = () => {
         <ManometerDrawing dh={dh} air={air} />
       </div>
       <div style={{ position: "absolute", right: 80, top: 280, width: 840, display: "flex", flexDirection: "column", gap: 18 }}>
-        <Card start={20} color={C.title} title={<>طرفا المانومتر (<T>Pressure taps</T>)</>}>
-          أحدهما متصل بأسفل الجزء المحشو، والآخر بأعلاه.
+        <Card start={q.s.m0} color={C.title} title={<>طرفا المانومتر (<T>Pressure taps</T>)</>}>
+          أسفل الحشوة وأعلاها
         </Card>
-        <Card start={110} color={C.air} title="فرق المنسوب يعكس هبوط الضغط">
-          الضغط في الأسفل أكبر، فينخفض الماء في الفرع المتصل بالأسفل ويرتفع في الفرع الآخر.
+        <Card start={q.s.m1} color={C.air} title="فرق المنسوب = هبوط الضغط">
+          <T>
+            P<sub>bottom</sub> &gt; P<sub>top</sub>
+          </T>
         </Card>
         <div
           style={{
@@ -117,16 +121,16 @@ export const ManometerScene: React.FC = () => {
             display: "flex",
             flexDirection: "column",
             gap: 12,
-            opacity: appear(f, 190),
+            opacity: appear(f, q.s.m2 - 10),
           }}
         >
-          {formula(200, <>ΔP = P<sub style={{ fontSize: 26 }}>bottom</sub> − P<sub style={{ fontSize: 26 }}>top</sub></>)}
-          {formula(255, <>Δh = |H<sub style={{ fontSize: 26 }}>1</sub> − H<sub style={{ fontSize: 26 }}>2</sub>|</>, C.note)}
-          {formula(310, <>ΔP ≈ ρ<sub style={{ fontSize: 26 }}>water</sub> × g × Δh</>)}
-          <div dir="rtl" lang="ar" style={{ fontSize: 28, color: C.body, textAlign: "center", lineHeight: 1.5, ...fadeUp(f, 370) }}>
+          {formula(q.s.m2, <>ΔP = P<sub style={{ fontSize: 26 }}>bottom</sub> − P<sub style={{ fontSize: 26 }}>top</sub></>)}
+          {formula(q.s.m3, <>Δh = |H<sub style={{ fontSize: 26 }}>1</sub> − H<sub style={{ fontSize: 26 }}>2</sub>|</>, C.note)}
+          {formula(q.s.m4, <>ΔP ≈ ρ<sub style={{ fontSize: 26 }}>water</sub> × g × Δh</>)}
+          <div dir="rtl" lang="ar" style={{ fontSize: 28, color: C.body, textAlign: "center", lineHeight: 1.5, ...fadeUp(f, q.s.m5) }}>
             استخدم <T>Δh</T> بالمتر للحصول على <T>ΔP</T> بوحدة <T>Pa</T>
           </div>
-          {formula(420, <>1 cm H₂O ≈ 98.1 Pa</>, C.sage, 38)}
+          {formula(at(q, "m5", 0.45), <>1 cm H₂O ≈ 98.1 Pa</>, C.sage, 38)}
         </div>
       </div>
     </Slide>
@@ -135,34 +139,34 @@ export const ManometerScene: React.FC = () => {
 
 /* ───────────────────────── 8. Dry / Wet / Loading / Flooding ───────────────────────── */
 const REGIMES: { mode: Mode; en: string; ar: React.ReactNode; dp: number }[] = [
-  { mode: "dry", en: "Dry packing", ar: <>يمر الهواء وحده بين الحلقات الجافة.</>, dp: 0.18 },
-  { mode: "wet", en: "Wet packing", ar: <>طبقة ماء على الحلقات، فيزداد هبوط الضغط عند نفس تدفق الهواء.</>, dp: 0.34 },
+  { mode: "dry", en: "Dry packing", ar: <>الهواء وحده بين الحلقات</>, dp: 0.18 },
+  { mode: "wet", en: "Wet packing", ar: <>طبقة ماء على الحلقات ← ΔP أكبر</>, dp: 0.34 },
   {
     mode: "loading",
     en: "Loading",
     ar: (
       <>
-        الهواء يبطئ تصريف الماء، فيزداد <T>Liquid holdup</T> ويرتفع هبوط الضغط أسرع.
+        يزداد <T>Liquid holdup</T> ويرتفع ΔP أسرع
       </>
     ),
     dp: 0.62,
   },
-  { mode: "flooding", en: "Flooding", ar: <>يتراكم الماء لأن الهواء يعيق نزوله بشدة، فيرتفع هبوط الضغط بحدة.</>, dp: 0.95 },
+  { mode: "flooding", en: "Flooding", ar: <>تراكم الماء ← ارتفاع حاد في ΔP</>, dp: 0.95 },
 ];
-const REG_START = 30;
-const REG_STEP = 125;
 
 export const RegimesScene: React.FC = () => {
   const f = useCurrentFrame();
-  const cur = Math.floor((f - REG_START) / REG_STEP);
+  const q = cues("regimes");
+  const starts = [q.s.r1, q.s.r2, q.s.r3, q.s.r4].map((x) => x - 6);
+  const cur = starts.filter((x) => f >= x).length - 1;
   return (
     <Slide title="Dry, Wet, Loading & Flooding" subtitle="من الحشوة الجافة إلى الفيضان" page="08">
       <div dir="rtl" style={{ position: "absolute", left: 70, right: 70, top: 272, display: "flex", gap: 28 }}>
         {REGIMES.map((r, i) => {
-          const start = REG_START + i * REG_STEP;
+          const start = starts[i];
           const lvl = appear(f, start, 90);
           const active = f >= start;
-          const isCur = i === Math.min(3, cur);
+          const isCur = i === cur;
           return (
             <div
               key={r.mode}
@@ -237,7 +241,7 @@ export const RegimesScene: React.FC = () => {
           fontSize: 28,
           fontWeight: 800,
           color: C.off,
-          ...fadeUp(f, REG_START + 3 * REG_STEP),
+          ...fadeUp(f, at(q, "r4", 0.55)),
         }}
       >
         مشهد <T color={C.off}>Flooding</T> محاكاة تفسيرية فقط، وليس توجيهًا لتشغيل الجهاز حتى الفيضان.
@@ -265,10 +269,11 @@ const curvePts = (fn: (x: number) => number, p: number): Pt[] => {
 
 export const CurvesScene: React.FC = () => {
   const f = useCurrentFrame();
-  const pDry = ramp(f, 40, 140, 0.001, 1);
-  const pWet = ramp(f, 130, 250, 0.001, 1);
-  const a1 = appear(f, 230);
-  const a2 = appear(f, 265);
+  const q = cues("curves");
+  const pDry = ramp(f, q.s.c1, q.s.c1 + 110, 0.001, 1);
+  const pWet = ramp(f, q.s.c2, q.s.c2 + 110, 0.001, 1);
+  const a1 = appear(f, at(q, "c3", 0.1));
+  const a2 = appear(f, at(q, "c3", 0.6));
   const txt = (x: number, y: number, s: string, size = 24, color: string = C.title, anchor: "start" | "middle" | "end" = "start", weight = 700) => (
     <text x={x} y={y} fontFamily={FONT} fontSize={size} fontWeight={weight} fill={color} textAnchor={anchor}>
       {s}
@@ -324,22 +329,20 @@ export const CurvesScene: React.FC = () => {
             fontWeight: 800,
             color: C.off,
             textAlign: "center",
-            ...fadeUp(f, 15),
+            ...fadeUp(f, at(q, "c0", 0.5)),
           }}
         >
           «منحنيات توضيحية وليست نتائج مقاسة»
         </div>
-        <Card start={50} color={C.sage} title="يزداد هبوط الضغط بزيادة تدفق الهواء" />
-        <Card start={140} color={C.note} title={<><T>Wet packing</T> أعلى غالبًا</>}>
-          عند نفس تدفق الهواء يكون هبوط الضغط أكبر.
-        </Card>
-        <Card start={235} color={C.off} title={<><T>Loading</T> ثم <T>Flooding</T></>}>
-          عند <T>Loading</T> يبدأ تراكم الماء، وقرب <T>Flooding</T> يرتفع هبوط الضغط بحدة.
-        </Card>
-        <Card start={300} color={C.title} title="للعمود الجاف حسب الدليل">
+        <Card start={q.s.c1} color={C.sage} title="يزداد ΔP بزيادة تدفق الهواء" />
+        <Card start={at(q, "c1", 0.4)} color={C.title} title="للعمود الجاف حسب الدليل">
           <bdi dir="ltr">
             ΔP ∝ (air flow)<sup>n</sup> , n ≈ 1.8–2.0
           </bdi>
+        </Card>
+        <Card start={q.s.c2} color={C.note} title={<><T>Wet packing</T> أعلى عادةً</>} />
+        <Card start={q.s.c3} color={C.off} title={<><T>Loading</T> ← <T>Flooding</T></>}>
+          ارتفاع حاد في ΔP
         </Card>
       </div>
     </Slide>
@@ -347,8 +350,8 @@ export const CurvesScene: React.FC = () => {
 };
 
 /* ───────────────────────── 10. Reliable readings ───────────────────────── */
-const IconSteady: React.FC = () => {
-  const f = useCurrentFrame();
+const IconSteady: React.FC<{ start: number }> = ({ start }) => {
+  const f = useCurrentFrame() - start;
   const amp = 40 * Math.exp(-f / 60);
   const pts: Pt[] = [];
   for (let i = 0; i <= 60; i++) {
@@ -396,10 +399,11 @@ const IconLeak: React.FC = () => {
 
 export const ReadingsScene: React.FC = () => {
   const f = useCurrentFrame();
+  const q = cues("readings");
   const items = [
-    { icon: <IconSteady />, ar: "انتظر استقرار التدفق", en: "Wait for steady flow", body: "سجّل القراءة بعد ثبات التدفق." },
-    { icon: <IconEye />, ar: "اقرأ المانومتر بمستوى العين", en: "Read at eye height", body: "عينك بمستوى سطح الماء في الأنبوب." },
-    { icon: <IconLeak />, ar: "تحقّق من عدم وجود تسرب", en: "Check for leaks", body: "تأكد من سلامة التوصيلات." },
+    { icon: <IconSteady start={q.s.g1} />, ar: "انتظر استقرار التدفق", en: "Wait for steady flow" },
+    { icon: <IconEye />, ar: "اقرأ المانومتر بمستوى العين", en: "Read at eye height" },
+    { icon: <IconLeak />, ar: "تحقّق من عدم وجود تسرب", en: "Check for leaks" },
   ];
   return (
     <Slide title="Reliable Readings" subtitle="إرشادات القراءة" page="10">
@@ -414,7 +418,7 @@ export const ReadingsScene: React.FC = () => {
               backgroundColor: "rgba(255,255,255,0.85)",
               border: `2px solid ${C.pack}`,
               textAlign: "center",
-              ...fadeUp(f, 20 + i * 45),
+              ...fadeUp(f, q.s[`g${i + 1}`] - 6),
             }}
           >
             <div style={{ height: 270 }}>{it.icon}</div>
@@ -424,9 +428,6 @@ export const ReadingsScene: React.FC = () => {
             <div dir="ltr" style={{ fontSize: 30, fontWeight: 700, color: C.note, marginTop: 4 }}>
               {it.en}
             </div>
-            <div lang="ar" style={{ fontSize: 29, color: C.body, marginTop: 14 }}>
-              {it.body}
-            </div>
           </div>
         ))}
       </div>
@@ -435,7 +436,6 @@ export const ReadingsScene: React.FC = () => {
 };
 
 /* ───────────────────────── 11. Shutdown ───────────────────────── */
-const SD = [30, 105, 180];
 
 const PumpStop: React.FC<{ start: number }> = ({ start }) => {
   const f = useCurrentFrame();
@@ -490,13 +490,15 @@ const Switches: React.FC<{ start: number }> = ({ start }) => {
   return (
     <svg viewBox="0 0 300 260" direction="ltr" style={{ width: "100%", height: "100%", direction: "ltr" }}>
       <Toggle x={10} y={60} on={f < start + 15} label="Air" />
-      <Toggle x={10} y={150} on={f < start + 50} label="Master switch" />
+      <Toggle x={10} y={150} on={f < start + 75} label="Master switch" />
     </svg>
   );
 };
 
 export const ShutdownScene: React.FC = () => {
   const f = useCurrentFrame();
+  const q = cues("shutdown");
+  const SD = [q.s.s1, q.s.s2, q.s.s3];
   const steps = [
     { icon: <PumpStop start={SD[0] + 10} />, ar: "أوقف مضخة الماء", en: "Stop the water pump" },
     { icon: <Drain start={SD[1] + 10} />, ar: "اسمح بتصريف الماء", en: "Allow drainage" },
@@ -564,7 +566,7 @@ export const ShutdownScene: React.FC = () => {
           fontSize: 38,
           fontWeight: 800,
           color: C.note,
-          ...fadeUp(f, 255),
+          ...fadeUp(f, q.s.s4),
         }}
       >
         اتبع دائمًا تعليمات المدرس وإجراءات المختبر.
