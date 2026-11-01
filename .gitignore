@@ -1,0 +1,3 @@
+node_modules/
+.DS_Store
+# Rendered videos live in out/; tracked on purpose so you can download them from GitHub.
