@@ -2,7 +2,7 @@ import React from "react";
 import { AbsoluteFill, Img, staticFile, useCurrentFrame } from "remotion";
 import { MiniColumn, Mode } from "./MiniColumn";
 import { C, FONT, Pt, appear, fadeUp, polyD, ramp } from "./theme";
-import { at, cues } from "./timing";
+import { cues, word } from "./timing";
 import { Arrow, Card, Slide, T } from "./ui";
 
 /* ───────────────────────── 7. Manometer ───────────────────────── */
@@ -91,8 +91,15 @@ const ManometerDrawing: React.FC<{ dh: number; air: number }> = ({ dh, air }) =>
 export const ManometerScene: React.FC = () => {
   const f = useCurrentFrame();
   const q = cues("manometer");
-  const air = ramp(f, q.s.m1, q.s.m1 + 40, 0, 0.7);
-  const dh = 170 * appear(f, q.s.m1 + 20, 110);
+  const M = {
+    p: word(q, "m1", "الضغط", 1, 0.27),
+    big: word(q, "m1", "أكبر", 1, 0.34),
+    dh: word(q, "m1", "دلتا", 1, 0.5),
+    dp: word(q, "m1", "ودلتا", 1, 0.63),
+    unit: word(q, "m1", "بالمتر", 1, 0.9),
+  };
+  const air = ramp(f, M.p - 30, M.p + 10, 0, 0.7);
+  const dh = 170 * appear(f, M.p, 80);
   const formula = (start: number, children: React.ReactNode, color: string = C.title, size = 44) => (
     <div dir="ltr" style={{ fontSize: size, fontWeight: 800, color, textAlign: "center", ...fadeUp(f, start) }}>
       {children}
@@ -104,10 +111,10 @@ export const ManometerScene: React.FC = () => {
         <ManometerDrawing dh={dh} air={air} />
       </div>
       <div style={{ position: "absolute", right: 80, top: 280, width: 840, display: "flex", flexDirection: "column", gap: 18 }}>
-        <Card start={q.s.m0} color={C.title} title={<>طرفا المانومتر (<T>Pressure taps</T>)</>}>
+        <Card start={q.s.m1} color={C.title} title={<>طرفا المانومتر (<T>Pressure taps</T>)</>}>
           أسفل الحشوة وأعلاها
         </Card>
-        <Card start={q.s.m1} color={C.air} title="فرق المنسوب = هبوط الضغط">
+        <Card start={M.p - 6} color={C.air} title="فرق المنسوب = هبوط الضغط">
           <T>
             P<sub>bottom</sub> &gt; P<sub>top</sub>
           </T>
@@ -121,16 +128,16 @@ export const ManometerScene: React.FC = () => {
             display: "flex",
             flexDirection: "column",
             gap: 12,
-            opacity: appear(f, q.s.m2 - 10),
+            opacity: appear(f, M.big - 10),
           }}
         >
-          {formula(q.s.m2, <>ΔP = P<sub style={{ fontSize: 26 }}>bottom</sub> − P<sub style={{ fontSize: 26 }}>top</sub></>)}
-          {formula(q.s.m3, <>Δh = |H<sub style={{ fontSize: 26 }}>1</sub> − H<sub style={{ fontSize: 26 }}>2</sub>|</>, C.note)}
-          {formula(q.s.m4, <>ΔP ≈ ρ<sub style={{ fontSize: 26 }}>water</sub> × g × Δh</>)}
-          <div dir="rtl" lang="ar" style={{ fontSize: 28, color: C.body, textAlign: "center", lineHeight: 1.5, ...fadeUp(f, q.s.m5) }}>
+          {formula(M.big, <>ΔP = P<sub style={{ fontSize: 26 }}>bottom</sub> − P<sub style={{ fontSize: 26 }}>top</sub></>)}
+          {formula(M.dh, <>Δh = |H<sub style={{ fontSize: 26 }}>1</sub> − H<sub style={{ fontSize: 26 }}>2</sub>|</>, C.note)}
+          {formula(M.dp, <>ΔP ≈ ρ<sub style={{ fontSize: 26 }}>water</sub> × g × Δh</>)}
+          <div dir="rtl" lang="ar" style={{ fontSize: 28, color: C.body, textAlign: "center", lineHeight: 1.5, ...fadeUp(f, M.unit) }}>
             استخدم <T>Δh</T> بالمتر للحصول على <T>ΔP</T> بوحدة <T>Pa</T>
           </div>
-          {formula(at(q, "m5", 0.45), <>1 cm H₂O ≈ 98.1 Pa</>, C.sage, 38)}
+          {formula(M.unit + 18, <>1 cm H₂O ≈ 98.1 Pa</>, C.sage, 38)}
         </div>
       </div>
     </Slide>
@@ -157,7 +164,7 @@ const REGIMES: { mode: Mode; en: string; ar: React.ReactNode; dp: number }[] = [
 export const RegimesScene: React.FC = () => {
   const f = useCurrentFrame();
   const q = cues("regimes");
-  const starts = [q.s.r1, q.s.r2, q.s.r3, q.s.r4].map((x) => x - 6);
+  const starts = ["Dry", "Wet", "Loading", "Flooding"].map((w, i) => word(q, "r1", w, 1, i / 4) - 6);
   const cur = starts.filter((x) => f >= x).length - 1;
   return (
     <Slide title="Dry, Wet, Loading & Flooding" subtitle="من الحشوة الجافة إلى الفيضان" page="08">
@@ -241,7 +248,7 @@ export const RegimesScene: React.FC = () => {
           fontSize: 28,
           fontWeight: 800,
           color: C.off,
-          ...fadeUp(f, at(q, "r4", 0.55)),
+          ...fadeUp(f, word(q, "r1", "فمحاكاة", 1, 0.8)),
         }}
       >
         مشهد <T color={C.off}>Flooding</T> محاكاة تفسيرية فقط، وليس توجيهًا لتشغيل الجهاز حتى الفيضان.
@@ -270,10 +277,15 @@ const curvePts = (fn: (x: number) => number, p: number): Pt[] => {
 export const CurvesScene: React.FC = () => {
   const f = useCurrentFrame();
   const q = cues("curves");
-  const pDry = ramp(f, q.s.c1, q.s.c1 + 110, 0.001, 1);
-  const pWet = ramp(f, q.s.c2, q.s.c2 + 110, 0.001, 1);
-  const a1 = appear(f, at(q, "c3", 0.1));
-  const a2 = appear(f, at(q, "c3", 0.6));
+  const K = {
+    wet: word(q, "c1", "المبلل", 1, 0.45),
+    rise: word(q, "c1", "ويرتفع", 1, 0.7),
+    load: word(q, "c1", "Loading", 1, 0.9),
+  };
+  const pDry = ramp(f, q.s.c1, q.s.c1 + 90, 0.001, 1);
+  const pWet = ramp(f, K.wet - 10, K.wet + 80, 0.001, 1);
+  const a1 = appear(f, K.load - 6);
+  const a2 = appear(f, K.load + 18);
   const txt = (x: number, y: number, s: string, size = 24, color: string = C.title, anchor: "start" | "middle" | "end" = "start", weight = 700) => (
     <text x={x} y={y} fontFamily={FONT} fontSize={size} fontWeight={weight} fill={color} textAnchor={anchor}>
       {s}
@@ -329,19 +341,19 @@ export const CurvesScene: React.FC = () => {
             fontWeight: 800,
             color: C.off,
             textAlign: "center",
-            ...fadeUp(f, at(q, "c0", 0.5)),
+            ...fadeUp(f, q.s.c1),
           }}
         >
           «منحنيات توضيحية وليست نتائج مقاسة»
         </div>
-        <Card start={q.s.c1} color={C.sage} title="يزداد ΔP بزيادة تدفق الهواء" />
-        <Card start={at(q, "c1", 0.4)} color={C.title} title="للعمود الجاف حسب الدليل">
+        <Card start={q.s.c1 + 20} color={C.sage} title="يزداد ΔP بزيادة تدفق الهواء" />
+        <Card start={q.s.c1 + 50} color={C.title} title="للعمود الجاف حسب الدليل">
           <bdi dir="ltr">
             ΔP ∝ (air flow)<sup>n</sup> , n ≈ 1.8–2.0
           </bdi>
         </Card>
-        <Card start={q.s.c2} color={C.note} title={<><T>Wet packing</T> أعلى عادةً</>} />
-        <Card start={q.s.c3} color={C.off} title={<><T>Loading</T> ← <T>Flooding</T></>}>
+        <Card start={K.wet} color={C.note} title={<><T>Wet packing</T> أعلى عادةً</>} />
+        <Card start={K.rise} color={C.off} title={<><T>Loading</T> ← <T>Flooding</T></>}>
           ارتفاع حاد في ΔP
         </Card>
       </div>
@@ -401,7 +413,7 @@ export const ReadingsScene: React.FC = () => {
   const f = useCurrentFrame();
   const q = cues("readings");
   const items = [
-    { icon: <IconSteady start={q.s.g1} />, ar: "انتظر استقرار التدفق", en: "Wait for steady flow" },
+    { icon: <IconSteady start={word(q, "g1", "انتظر")} />, ar: "انتظر استقرار التدفق", en: "Wait for steady flow" },
     { icon: <IconEye />, ar: "اقرأ المانومتر بمستوى العين", en: "Read at eye height" },
     { icon: <IconLeak />, ar: "تحقّق من عدم وجود تسرب", en: "Check for leaks" },
   ];
@@ -418,7 +430,7 @@ export const ReadingsScene: React.FC = () => {
               backgroundColor: "rgba(255,255,255,0.85)",
               border: `2px solid ${C.pack}`,
               textAlign: "center",
-              ...fadeUp(f, q.s[`g${i + 1}`] - 6),
+              ...fadeUp(f, word(q, "g1", ["انتظر", "واقرأ", "وتحقق"][i], 1, i / 3) - 6),
             }}
           >
             <div style={{ height: 270 }}>{it.icon}</div>
@@ -485,12 +497,12 @@ const Toggle: React.FC<{ x: number; y: number; on: boolean; label: string }> = (
     </text>
   </g>
 );
-const Switches: React.FC<{ start: number }> = ({ start }) => {
+const Switches: React.FC<{ airOff: number; masterOff: number }> = ({ airOff, masterOff }) => {
   const f = useCurrentFrame();
   return (
     <svg viewBox="0 0 300 260" direction="ltr" style={{ width: "100%", height: "100%", direction: "ltr" }}>
-      <Toggle x={10} y={60} on={f < start + 15} label="Air" />
-      <Toggle x={10} y={150} on={f < start + 75} label="Master switch" />
+      <Toggle x={10} y={60} on={f < airOff + 6} label="Air" />
+      <Toggle x={10} y={150} on={f < masterOff + 10} label="Master switch" />
     </svg>
   );
 };
@@ -498,11 +510,13 @@ const Switches: React.FC<{ start: number }> = ({ start }) => {
 export const ShutdownScene: React.FC = () => {
   const f = useCurrentFrame();
   const q = cues("shutdown");
-  const SD = [q.s.s1, q.s.s2, q.s.s3];
+  const SD = [word(q, "s1", "أوقف", 1, 0.12), word(q, "s1", "واسمح", 1, 0.24), word(q, "s1", "ثم", 1, 0.38)];
+  const airOff = word(q, "s1", "الهواء", 1, 0.44);
+  const masterOff = word(q, "s1", "والمفتاح", 1, 0.48);
   const steps = [
     { icon: <PumpStop start={SD[0] + 10} />, ar: "أوقف مضخة الماء", en: "Stop the water pump" },
-    { icon: <Drain start={SD[1] + 10} />, ar: "اسمح بتصريف الماء", en: "Allow drainage" },
-    { icon: <Switches start={SD[2] + 10} />, ar: "أوقف الهواء ثم المفتاح الرئيسي", en: "Stop air, then the master switch" },
+    { icon: <Drain start={SD[1] + 6} />, ar: "اسمح بتصريف الماء", en: "Allow drainage" },
+    { icon: <Switches airOff={airOff} masterOff={masterOff} />, ar: "أوقف الهواء ثم المفتاح الرئيسي", en: "Stop air, then the master switch" },
   ];
   return (
     <Slide title="Shutdown" subtitle="إيقاف الجهاز حسب العرض" page="11">
@@ -566,7 +580,7 @@ export const ShutdownScene: React.FC = () => {
           fontSize: 38,
           fontWeight: 800,
           color: C.note,
-          ...fadeUp(f, q.s.s4),
+          ...fadeUp(f, word(q, "s1", "واتبع", 1, 0.7)),
         }}
       >
         اتبع دائمًا تعليمات المدرس وإجراءات المختبر.

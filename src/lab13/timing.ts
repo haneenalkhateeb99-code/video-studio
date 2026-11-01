@@ -1,13 +1,14 @@
 import DUR from "./vo-durations.json";
+import WORDS from "./vo-words.json";
 import { NARRATION, SceneKey } from "./narration";
 
 // Scene timing is derived from the recorded voice-over:
 // each cue starts after the previous clip (+ GAP + optional hold),
 // so animations stay in sync if the audio is re-generated or re-recorded.
 export const FPS = 30;
-const LEAD = 0.7; // s before the first sentence (covers the 0.5 s cross-fade)
+const LEAD = 0.6; // s before the first sentence (covers the 0.5 s cross-fade)
 const GAP = 0.25; // s between sentences (clips already end with ~1 s of silence)
-const TAIL = 0.6; // s after the last sentence
+const TAIL = 0.3; // s after the last sentence
 
 export type Cues = { s: Record<string, number>; e: Record<string, number>; dur: number; ids: string[] };
 
@@ -30,3 +31,19 @@ export const cues = (key: SceneKey): Cues => {
 
 /** Frame inside a cue: fraction 0..1 of the sentence's length. */
 export const at = (q: Cues, id: string, frac: number) => Math.round(q.s[id] + (q.e[id] - q.s[id]) * frac);
+
+const words = WORDS as unknown as Record<string, [number, string][]>;
+
+/** Frame at which `needle` is spoken in clip `id` (nth occurrence).
+ *  Falls back to a fraction of the sentence when no word timings exist (e.g. a human recording). */
+export const word = (q: Cues, id: string, needle: string, nth = 1, fallback = 0) => {
+  const list = words[id] ?? [];
+  let n = 0;
+  for (const [t, w] of list) {
+    if (w === needle || w.includes(needle)) {
+      n++;
+      if (n === nth) return q.s[id] + Math.round(t * FPS);
+    }
+  }
+  return at(q, id, fallback);
+};

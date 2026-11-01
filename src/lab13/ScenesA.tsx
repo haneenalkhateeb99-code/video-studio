@@ -3,7 +3,7 @@ import { AbsoluteFill, Img, staticFile, useCurrentFrame } from "remotion";
 import { MiniColumn } from "./MiniColumn";
 import { Part, Schematic } from "./Schematic";
 import { C, FONT, appear, fadeUp, ramp } from "./theme";
-import { at, cues } from "./timing";
+import { cues, word } from "./timing";
 import { Card, Slide, T } from "./ui";
 
 // Every animation event is tied to the voice-over cue that explains it (q.s[id] = start frame).
@@ -46,8 +46,8 @@ export const TitleScene: React.FC = () => {
         <div dir="rtl" lang="ar" style={{ fontSize: 52, fontWeight: 800, color: C.sage, marginTop: 22, ...fadeUp(f, 26) }}>
           قياس هبوط الضغط في عمود محشو
         </div>
-        <div style={{ fontSize: 46, fontWeight: 800, color: C.title, marginTop: 40, ...fadeUp(f, at(q, "t1", 0.45)) }}>LAB 13</div>
-        <div style={{ fontSize: 40, color: C.body, marginTop: 20, lineHeight: 1.3, ...fadeUp(f, at(q, "t1", 0.6)) }}>
+        <div style={{ fontSize: 46, fontWeight: 800, color: C.title, marginTop: 40, ...fadeUp(f, 40) }}>LAB 13</div>
+        <div style={{ fontSize: 40, color: C.body, marginTop: 20, lineHeight: 1.3, ...fadeUp(f, 52) }}>
           CMET 205
           <br />
           Mass Transfer Operations
@@ -81,7 +81,7 @@ export const ObjectivesScene: React.FC = () => {
       </div>
       <div style={{ position: "absolute", right: 110, top: 330, width: 1080, display: "flex", flexDirection: "column", gap: 44 }}>
         {OBJECTIVES.map((o, i) => (
-          <div key={o.en} style={{ ...fadeUp(f, q.s[`o${i + 1}`] - 4) }}>
+          <div key={o.en} style={{ ...fadeUp(f, word(q, "o1", ["قياس", "ودراسة", "وفهم"][i], 1, i / 3) - 4) }}>
             <div dir="ltr" style={{ fontSize: 48, fontWeight: 800, color: C.title, textAlign: "right" }}>
               {o.en}
             </div>
@@ -110,11 +110,12 @@ const PARTS: { key: Part; en: string; ar: string }[] = [
 export const DiagramScene: React.FC = () => {
   const f = useCurrentFrame();
   const q = cues("diagram");
-  const starts = PARTS.map((_, i) => q.s[`d${i + 1}`] - 6);
+  const anchors = ["Packed", "Rashig", "وخزان", "ومضخة", "Water", "Distributor", "Air", "U"];
+  const starts = anchors.map((w, i) => word(q, "d1", w, 1, i / 8) - 6);
   const vis: Partial<Record<Part, number>> = {};
   PARTS.forEach((p, i) => (vis[p.key] = appear(f, starts[i], 22)));
   const cur = starts.filter((s) => f >= s).length - 1;
-  const glow = cur >= 0 && f < q.e.d8 + 15 ? PARTS[cur].key : null;
+  const glow = cur >= 0 && f < q.e.d1 + 15 ? PARTS[cur].key : null;
   return (
     <Slide title="Process Diagram" subtitle="مخطط الجهاز" page="03" footnote={SIMPLIFIED}>
       <div style={SCHEMATIC_BOX}>
@@ -174,34 +175,41 @@ export const DiagramScene: React.FC = () => {
 export const FlowScene: React.FC = () => {
   const f = useCurrentFrame();
   const q = cues("flow");
-  const water = ramp(f, q.s.w0, q.s.w0 + 40, 0, 1);
-  const air = ramp(f, q.s.w2, q.s.w2 + 40, 0, 0.55);
-  const arrows = appear(f, q.s.w3, 25);
+  const W = {
+    pump: q.s.w1,
+    top: word(q, "w1", "أعلى", 1, 0.08),
+    down: word(q, "w1", "وينزل", 1, 0.17),
+    air: word(q, "w1", "يصعد", 1, 0.33),
+    cc: word(q, "w1", "Countercurrent", 1, 0.5),
+    rings: word(q, "w1", "وتزيد", 1, 0.65),
+  };
+  const water = ramp(f, W.pump, W.pump + 40, 0, 1);
+  const air = ramp(f, W.air, W.air + 40, 0, 0.55);
+  const arrows = appear(f, W.cc, 25);
   let glow: Part | null = null;
-  if (f >= q.s.w0 && f < at(q, "w0", 0.45)) glow = "pump";
-  else if (f >= at(q, "w0", 0.45) && f < at(q, "w0", 0.7)) glow = "wmeter";
-  else if (f >= at(q, "w0", 0.7) && f < q.e.w0) glow = "dist";
-  else if (f >= q.s.w1 && f < q.e.w1) glow = "rings";
-  else if (f >= q.s.w2 && f < q.e.w2) glow = "air";
-  else if (f >= q.s.w4) glow = "rings";
+  if (f >= W.pump && f < W.top) glow = "pump";
+  else if (f >= W.top && f < W.down) glow = "dist";
+  else if (f >= W.down && f < W.air) glow = "rings";
+  else if (f >= W.air && f < W.cc) glow = "air";
+  else if (f >= W.rings) glow = "rings";
   return (
     <Slide title="Water & Air Flow" subtitle="مسار الماء والهواء داخل الجهاز" page="04" footnote={SIMPLIFIED}>
       <div style={SCHEMATIC_BOX}>
-        <Schematic water={water} air={air} pumpOn={f > q.s.w0} arrows={arrows} holdup={0.15} glow={glow} style={{ width: "100%", height: "100%" }} />
+        <Schematic water={water} air={air} pumpOn={f > W.pump} arrows={arrows} holdup={0.15} glow={glow} style={{ width: "100%", height: "100%" }} />
       </div>
       <div style={PANEL}>
-        <Card start={q.s.w0} color={C.water} title="مسار الماء ↓">
+        <Card start={W.pump} color={C.water} title="مسار الماء ↓">
           <T>Pump</T> ← <T>Water flow meter</T> ← <T>Distributor</T>
           <br />← الحشوات ← الخزان
         </Card>
-        <Card start={q.s.w2} color={C.air} title="مسار الهواء ↑">
+        <Card start={W.air} color={C.air} title="مسار الهواء ↑">
           <T>Air control valve</T> ← <T>Air flow meter</T>
           <br />← أسفل العمود ← أعلى العمود
         </Card>
-        <Card start={q.s.w3} color={C.title} title={<T>Countercurrent flow</T>}>
+        <Card start={W.cc} color={C.title} title={<T>Countercurrent flow</T>}>
           الماء ينزل ↓ والهواء يصعد ↑
         </Card>
-        <Card start={q.s.w4} color={C.sage} title={<T>Raschig rings</T>}>
+        <Card start={W.rings} color={C.sage} title={<T>Raschig rings</T>}>
           مساحة تلامس أكبر بين الغاز والسائل
         </Card>
       </div>
@@ -281,23 +289,24 @@ const Tracker: React.FC<{ start: number; each: number }> = ({ start, each }) => 
 export const DryScene: React.FC = () => {
   const f = useCurrentFrame();
   const q = cues("dry");
-  const rStart = at(q, "y2", 0.35); // readings begin while "adjust → wait → record" is explained
-  const each = (q.e.y3 + 20 - rStart) / 6;
+  const airOn = word(q, "y1", "نبدأ", 1, 0.35);
+  const rStart = word(q, "y1", "عشرين", 1, 0.48); // reading 1 at ≈ 20 L/min, then five more
+  const each = (q.e.y1 + 40 - rStart) / 6;
   const rs = readingState(f, rStart, each);
-  const air = f < rStart ? ramp(f, q.s.y1 + 15, q.s.y1 + 55, 0, levelFor(0)) : rs.air;
+  const air = f < rStart ? ramp(f, airOn, airOn + 25, 0, levelFor(0)) : rs.air;
   const dh = air > 0.01 ? 20 + 130 * Math.pow(air, 1.9) : 0;
-  const glow: Part | null = f < q.s.y1 ? "pump" : f < q.s.y2 ? "air" : "mano";
+  const glow: Part | null = f < airOn ? "pump" : f < rStart ? "air" : "mano";
   return (
     <Slide title="Dry Column Test" subtitle="اختبار العمود الجاف" page="05" footnote={SIMPLIFIED}>
       <div style={SCHEMATIC_BOX}>
         <Schematic air={air} dh={dh} pumpBadge="OFF" glow={glow} style={{ width: "100%", height: "100%" }} />
       </div>
       <div style={PANEL}>
-        <Card start={q.s.y0} color={C.off} title={<>المضخة متوقفة (<T>Water pump OFF</T>)</>} />
-        <Card start={q.s.y1} color={C.air} title={<>ابدأ الهواء قرب <T>20 L/min</T></>}>
+        <Card start={q.s.y1} color={C.off} title={<>المضخة متوقفة (<T>Water pump OFF</T>)</>} />
+        <Card start={airOn} color={C.air} title={<>ابدأ الهواء قرب <T>20 L/min</T></>}>
           حسب العرض
         </Card>
-        <Card start={q.s.y2} color={C.note} title="6 قراءات مختلفة لتدفق الهواء">
+        <Card start={rStart - 6} color={C.note} title="6 قراءات مختلفة لتدفق الهواء">
           <Tracker start={rStart} each={each} />
         </Card>
       </div>
@@ -309,14 +318,17 @@ export const DryScene: React.FC = () => {
 export const WetScene: React.FC = () => {
   const f = useCurrentFrame();
   const q = cues("wet");
-  const water = ramp(f, at(q, "e0", 0.55), at(q, "e0", 0.55) + 40, 0, 1);
-  const rStart = q.s.e2 + 20;
-  const each = (q.e.e3 + 20 - rStart) / 6;
+  const pumpAt = word(q, "e1", "نشغّل", 1, 0.13);
+  const steady = word(q, "e1", "ونثبّت", 1, 0.21);
+  const rStart = word(q, "e1", "ونكرر", 1, 0.38);
+  const confirm = word(q, "e1", "وتُؤكَّد", 1, 0.65);
+  const water = ramp(f, pumpAt, pumpAt + 40, 0, 1);
+  const each = (q.e.e1 + 30 - rStart) / 6;
   const rs = readingState(f, rStart, each);
-  const air = f < rStart ? ramp(f, q.s.e2, rStart, 0, levelFor(0)) : rs.air;
+  const air = f < rStart ? 0 : rs.air;
   const dh = air > 0.01 ? 28 + 175 * Math.pow(air, 1.9) : 0;
-  const pumpOn = f > at(q, "e0", 0.55);
-  const glow: Part | null = f < q.s.e1 ? "pump" : f < q.s.e2 ? "wmeter" : "mano";
+  const pumpOn = f > pumpAt;
+  const glow: Part | null = f < steady ? "pump" : f < rStart ? "wmeter" : "mano";
   return (
     <Slide title="Wet Column Test" subtitle="اختبار العمود المبلل" page="06" footnote={SIMPLIFIED}>
       <div style={SCHEMATIC_BOX}>
@@ -332,8 +344,8 @@ export const WetScene: React.FC = () => {
         />
       </div>
       <div style={PANEL}>
-        <Card start={q.s.e0} color={C.water} title={<>شغّل دوران الماء (<T>Water pump ON</T>)</>} />
-        <Card start={q.s.e1} color={C.note} title="ثبّت تدفق الماء">
+        <Card start={pumpAt - 4} color={C.water} title={<>شغّل دوران الماء (<T>Water pump ON</T>)</>} />
+        <Card start={steady} color={C.note} title="ثبّت تدفق الماء">
           <div
             style={{
               marginTop: 8,
@@ -343,7 +355,7 @@ export const WetScene: React.FC = () => {
               color: C.title,
               fontSize: 28,
               lineHeight: 1.5,
-              ...fadeUp(f, at(q, "e1", 0.25)),
+              ...fadeUp(f, Math.min(steady + 20, confirm)),
             }}
           >
             تعارض في المصدر:
@@ -353,7 +365,7 @@ export const WetScene: React.FC = () => {
             <b>القيمة تُؤكَّد مع المدرس.</b>
           </div>
         </Card>
-        <Card start={q.s.e2} color={C.air} title="كرّر قراءات الهواء الست">
+        <Card start={rStart - 6} color={C.air} title="كرّر قراءات الهواء الست">
           <Tracker start={rStart} each={each} />
         </Card>
       </div>
