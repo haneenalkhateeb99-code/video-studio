@@ -3,8 +3,30 @@
 The user works from an iPad only. All setup, rendering and delivery happens in the cloud
 session; the user downloads finished videos from GitHub. Reply to the user in Arabic.
 
+## Remotion skills (official, installed in `.claude/skills/`)
+The official Remotion Agent Skills (`remotion-dev/skills`, v4.0.539, pinned in `skills-lock.json`)
+are committed to this repo. **Use them for every video task:**
+- Start with the `remotion-best-practices` skill (router), then load what it points to:
+  `remotion-create` for a new video/composition, `remotion-markup` for writing the React markup
+  (animation, sequencing, transitions, text, images, audio), `remotion-render` for export options,
+  `remotion-captions`, `remotion-maps`, `remotion-multimedia` when relevant, and `remotion-docs`
+  to look up current APIs instead of answering from memory.
+- For Arabic text always read `.claude/skills/remotion-markup/arabic-text.md`
+  (animate words, not letters; `dir="rtl"` + `lang="ar"`).
+- To update the skills: `npx skills update -p -y` (or `remotion-upgrade` skill together with Remotion).
+
+### Overrides — this file wins where the skills disagree
+- **A project already exists.** Never scaffold (`create-video`) or create a new project/subfolder;
+  add compositions to this one.
+- **Always render the MP4.** The skills say "don't render unless explicit, open Studio instead".
+  Here the user is on an iPad and cannot reach Studio (localhost inside the cloud container), so
+  every video request implicitly means "render it to MP4 and deliver it". Do not start Studio as the
+  delivery method.
+- **No Google Fonts / remote URLs** (see Gotchas) even though `google-fonts.md` recommends
+  `@remotion/google-fonts`; use local fonts via `@remotion/fonts` as in `local-fonts.md`.
+
 ## Workflow for a new video request
-1. `npm install` if `node_modules/` is missing.
+1. `npm install` if `node_modules/` is missing. Load the `remotion-best-practices` skill.
 2. Create a component in `src/<Name>.tsx` and register a `<Composition>` in `src/Root.tsx`
    (id, fps 30, width/height, durationInFrames = seconds × fps, defaultProps).
 3. `npm run typecheck`, then `npx remotion render <Id> out/<kebab-name>.mp4`.
