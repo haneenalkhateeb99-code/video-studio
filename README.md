@@ -46,6 +46,10 @@ npx remotion compositions                        # عرض قائمة الفيد�
 npm run typecheck                                # فحص الأنواع
 ```
 
+## مهارات Remotion لـ Claude
+
+مهارات Remotion الرسمية (`remotion-dev/skills`) محفوظة في `.claude/skills/`، ويستخدمها Claude Code تلقائيًا في كل جلسة على هذا المستودع. التفاصيل وقواعد الاستخدام في `CLAUDE.md`.
+
 ## ملاحظات تقنية
 
 - الخطوط محفوظة محليًا في `public/fonts`، لأن المتصفح المستخدم في التصدير داخل البيئة السحابية لا يستطيع تحميل الخطوط من الإنترنت مباشرة (فهو لا يثق بشهادة الوكيل الشبكي). لذلك لا تستخدم `@remotion/google-fonts`، بل نزّل ملف الخط إلى `public/fonts` بأمر `curl`.
