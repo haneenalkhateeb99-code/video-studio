@@ -1,5 +1,6 @@
 import { Composition } from "remotion";
 import { HelloWorld } from "./HelloWorld";
+import { LAB13_DURATION, PackedColumnLab } from "./PackedColumnLab";
 
 // Every video is registered here as a <Composition>.
 // To render one: npx remotion render <id> out/<name>.mp4
@@ -17,6 +18,14 @@ export const RemotionRoot: React.FC = () => {
           title: "مرحبًا من Remotion",
           subtitle: "اختبار الإعداد · Video Studio",
         }}
+      />
+      <Composition
+        id="PackedColumnLab13"
+        component={PackedColumnLab}
+        durationInFrames={LAB13_DURATION} // ≈ 149 s × 30 fps
+        fps={30}
+        width={1920}
+        height={1080}
       />
     </>
   );

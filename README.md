@@ -9,6 +9,7 @@
 |---|---|
 | `src/Root.tsx` | سجلّ الفيديوهات: كل فيديو مسجَّل فيه كـ `<Composition>` (المعرّف والمدة والأبعاد) |
 | `src/HelloWorld.tsx` | الفيديو التجريبي (5 ثوانٍ، 1920×1080، 30 إطارًا في الثانية) |
+| `src/PackedColumnLab.tsx` + `src/lab13/` | فيديو تجربة CMET205 Lab 13 (هبوط الضغط في عمود محشو) — المعرّف `PackedColumnLab13`، الناتج `out/packed-column-pressure-drop-lab13.mp4` |
 | `src/fonts.ts` | تحميل خط Cairo (عربي + لاتيني) من الملفات المحلية |
 | `public/` | الأصول: خطوط وصور وأصوات تُستدعى بـ `staticFile()` |
 | `out/` | ملفات MP4 المُصدَّرة (محفوظة في المستودع لتتمكن من تنزيلها) |
@@ -53,5 +54,5 @@ npm run typecheck                                # فحص الأنواع
 ## ملاحظات تقنية
 
 - الخطوط محفوظة محليًا في `public/fonts`، لأن المتصفح المستخدم في التصدير داخل البيئة السحابية لا يستطيع تحميل الخطوط من الإنترنت مباشرة (فهو لا يثق بشهادة الوكيل الشبكي). لذلك لا تستخدم `@remotion/google-fonts`، بل نزّل ملف الخط إلى `public/fonts` بأمر `curl`.
-- خط Cairo مرخّص برخصة SIL Open Font License (انظر `public/fonts/OFL.txt`).
+- خط Cairo مرخّص برخصة SIL Open Font License (انظر `public/fonts/OFL.txt`). خط Public Sans (بديل مجاني لخط Aptos في عرض Lab 13) مرخّص بالرخصة نفسها (`public/fonts/PublicSans-OFL.txt`).
 - تحتاج Remotion إلى رخصة شركة للشركات التي يعمل فيها 4 أشخاص أو أكثر، أما الأفراد فاستخدامها لهم مجاني. التفاصيل في [remotion.dev/license](https://www.remotion.dev/license).
