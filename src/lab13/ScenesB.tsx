@@ -92,11 +92,11 @@ export const ManometerScene: React.FC = () => {
   const f = useCurrentFrame();
   const q = cues("manometer");
   const M = {
-    p: word(q, "m1", "الضغط", 1, 0.27),
-    big: word(q, "m1", "أكبر", 1, 0.34),
-    dh: word(q, "m1", "دلتا", 1, 0.5),
-    dp: word(q, "m1", "ودلتا", 1, 0.63),
-    unit: word(q, "m1", "بالمتر", 1, 0.9),
+    p: q.s.m2,
+    big: word(q, "m2", "أكبر", 1, 0.35),
+    dh: word(q, "m2", "دلتا", 1, 0.8),
+    dp: q.s.m3,
+    unit: word(q, "m3", "بالمتر", 1, 0.9),
   };
   const air = ramp(f, M.p - 30, M.p + 10, 0, 0.7);
   const dh = 170 * appear(f, M.p, 80);
@@ -164,7 +164,7 @@ const REGIMES: { mode: Mode; en: string; ar: React.ReactNode; dp: number }[] = [
 export const RegimesScene: React.FC = () => {
   const f = useCurrentFrame();
   const q = cues("regimes");
-  const starts = ["Dry", "Wet", "Loading", "Flooding"].map((w, i) => word(q, "r1", w, 1, i / 4) - 6);
+  const starts = [q.s.r1, q.s.r2, q.s.r3, q.s.r4].map((x) => x - 6);
   const cur = starts.filter((x) => f >= x).length - 1;
   return (
     <Slide title="Dry, Wet, Loading & Flooding" subtitle="من الحشوة الجافة إلى الفيضان" page="08">
@@ -248,7 +248,7 @@ export const RegimesScene: React.FC = () => {
           fontSize: 28,
           fontWeight: 800,
           color: C.off,
-          ...fadeUp(f, word(q, "r1", "فمحاكاة", 1, 0.8)),
+          ...fadeUp(f, word(q, "r4", "محاكاة", 1, 0.5)),
         }}
       >
         مشهد <T color={C.off}>Flooding</T> محاكاة تفسيرية فقط، وليس توجيهًا لتشغيل الجهاز حتى الفيضان.
@@ -278,9 +278,9 @@ export const CurvesScene: React.FC = () => {
   const f = useCurrentFrame();
   const q = cues("curves");
   const K = {
-    wet: word(q, "c1", "المبلل", 1, 0.45),
-    rise: word(q, "c1", "ويرتفع", 1, 0.7),
-    load: word(q, "c1", "Loading", 1, 0.9),
+    wet: q.s.c2,
+    rise: word(q, "c2", "ويرتفع", 1, 0.6),
+    load: word(q, "c2", "لودينغ", 1, 0.9),
   };
   const pDry = ramp(f, q.s.c1, q.s.c1 + 90, 0.001, 1);
   const pWet = ramp(f, K.wet - 10, K.wet + 80, 0.001, 1);
@@ -413,7 +413,7 @@ export const ReadingsScene: React.FC = () => {
   const f = useCurrentFrame();
   const q = cues("readings");
   const items = [
-    { icon: <IconSteady start={word(q, "g1", "انتظر")} />, ar: "انتظر استقرار التدفق", en: "Wait for steady flow" },
+    { icon: <IconSteady start={q.s.g1} />, ar: "انتظر استقرار التدفق", en: "Wait for steady flow" },
     { icon: <IconEye />, ar: "اقرأ المانومتر بمستوى العين", en: "Read at eye height" },
     { icon: <IconLeak />, ar: "تحقّق من عدم وجود تسرب", en: "Check for leaks" },
   ];
@@ -430,7 +430,7 @@ export const ReadingsScene: React.FC = () => {
               backgroundColor: "rgba(255,255,255,0.85)",
               border: `2px solid ${C.pack}`,
               textAlign: "center",
-              ...fadeUp(f, word(q, "g1", ["انتظر", "واقرأ", "وتحقق"][i], 1, i / 3) - 6),
+              ...fadeUp(f, [q.s.g1, q.s.g2, q.s.g3][i] - 6),
             }}
           >
             <div style={{ height: 270 }}>{it.icon}</div>
@@ -510,9 +510,9 @@ const Switches: React.FC<{ airOff: number; masterOff: number }> = ({ airOff, mas
 export const ShutdownScene: React.FC = () => {
   const f = useCurrentFrame();
   const q = cues("shutdown");
-  const SD = [word(q, "s1", "أوقف", 1, 0.12), word(q, "s1", "واسمح", 1, 0.24), word(q, "s1", "ثم", 1, 0.38)];
-  const airOff = word(q, "s1", "الهواء", 1, 0.44);
-  const masterOff = word(q, "s1", "والمفتاح", 1, 0.48);
+  const SD = [word(q, "s1", "أوقف", 1, 0.3), word(q, "s1", "واسمح", 1, 0.65), q.s.s2];
+  const airOff = word(q, "s2", "الهواء", 1, 0.35);
+  const masterOff = word(q, "s2", "والمفتاح", 1, 0.6);
   const steps = [
     { icon: <PumpStop start={SD[0] + 10} />, ar: "أوقف مضخة الماء", en: "Stop the water pump" },
     { icon: <Drain start={SD[1] + 6} />, ar: "اسمح بتصريف الماء", en: "Allow drainage" },
@@ -580,7 +580,7 @@ export const ShutdownScene: React.FC = () => {
           fontSize: 38,
           fontWeight: 800,
           color: C.note,
-          ...fadeUp(f, word(q, "s1", "واتبع", 1, 0.7)),
+          ...fadeUp(f, q.s.s3),
         }}
       >
         اتبع دائمًا تعليمات المدرس وإجراءات المختبر.

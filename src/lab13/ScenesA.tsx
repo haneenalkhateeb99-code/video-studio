@@ -81,7 +81,7 @@ export const ObjectivesScene: React.FC = () => {
       </div>
       <div style={{ position: "absolute", right: 110, top: 330, width: 1080, display: "flex", flexDirection: "column", gap: 44 }}>
         {OBJECTIVES.map((o, i) => (
-          <div key={o.en} style={{ ...fadeUp(f, word(q, "o1", ["قياس", "ودراسة", "وفهم"][i], 1, i / 3) - 4) }}>
+          <div key={o.en} style={{ ...fadeUp(f, [word(q, "o1", "قياس"), word(q, "o1", "ودراسة", 1, 0.5), q.s.o2][i] - 4) }}>
             <div dir="ltr" style={{ fontSize: 48, fontWeight: 800, color: C.title, textAlign: "right" }}>
               {o.en}
             </div>
@@ -110,12 +110,20 @@ const PARTS: { key: Part; en: string; ar: string }[] = [
 export const DiagramScene: React.FC = () => {
   const f = useCurrentFrame();
   const q = cues("diagram");
-  const anchors = ["Packed", "Rashig", "وخزان", "ومضخة", "Water", "Distributor", "Air", "U"];
-  const starts = anchors.map((w, i) => word(q, "d1", w, 1, i / 8) - 6);
+  const starts = [
+    word(q, "d1", "Packed", 1, 0.25),
+    word(q, "d1", "Rashig", 1, 0.7),
+    word(q, "d2", "خزان", 1, 0.15),
+    word(q, "d2", "ومضخة", 1, 0.3),
+    word(q, "d2", "Water", 1, 0.45),
+    word(q, "d2", "Distributor", 1, 0.75),
+    word(q, "d3", "Air", 1, 0.4),
+    word(q, "d3", "يو", 1, 0.7),
+  ].map((x) => x - 6);
   const vis: Partial<Record<Part, number>> = {};
   PARTS.forEach((p, i) => (vis[p.key] = appear(f, starts[i], 22)));
   const cur = starts.filter((s) => f >= s).length - 1;
-  const glow = cur >= 0 && f < q.e.d1 + 15 ? PARTS[cur].key : null;
+  const glow = cur >= 0 && f < q.end + 15 ? PARTS[cur].key : null;
   return (
     <Slide title="Process Diagram" subtitle="مخطط الجهاز" page="03" footnote={SIMPLIFIED}>
       <div style={SCHEMATIC_BOX}>
@@ -177,11 +185,11 @@ export const FlowScene: React.FC = () => {
   const q = cues("flow");
   const W = {
     pump: q.s.w1,
-    top: word(q, "w1", "أعلى", 1, 0.08),
-    down: word(q, "w1", "وينزل", 1, 0.17),
-    air: word(q, "w1", "يصعد", 1, 0.33),
-    cc: word(q, "w1", "Countercurrent", 1, 0.5),
-    rings: word(q, "w1", "وتزيد", 1, 0.65),
+    top: word(q, "w1", "أعلى", 1, 0.35),
+    down: word(q, "w1", "ينزل", 1, 0.6),
+    air: word(q, "w2", "يصعد", 1, 0.1),
+    cc: word(q, "w2", "Counter", 1, 0.65),
+    rings: q.s.w3,
   };
   const water = ramp(f, W.pump, W.pump + 40, 0, 1);
   const air = ramp(f, W.air, W.air + 40, 0, 0.55);
@@ -289,9 +297,9 @@ const Tracker: React.FC<{ start: number; each: number }> = ({ start, each }) => 
 export const DryScene: React.FC = () => {
   const f = useCurrentFrame();
   const q = cues("dry");
-  const airOn = word(q, "y1", "نبدأ", 1, 0.35);
-  const rStart = word(q, "y1", "عشرين", 1, 0.48); // reading 1 at ≈ 20 L/min, then five more
-  const each = (q.e.y1 + 40 - rStart) / 6;
+  const airOn = q.s.y2;
+  const rStart = word(q, "y2", "عشرين", 1, 0.2); // reading 1 at ≈ 20 L/min, then five more
+  const each = (q.end + 15 - rStart) / 6; // 6th reading is recorded before the scene ends
   const rs = readingState(f, rStart, each);
   const air = f < rStart ? ramp(f, airOn, airOn + 25, 0, levelFor(0)) : rs.air;
   const dh = air > 0.01 ? 20 + 130 * Math.pow(air, 1.9) : 0;
@@ -318,12 +326,12 @@ export const DryScene: React.FC = () => {
 export const WetScene: React.FC = () => {
   const f = useCurrentFrame();
   const q = cues("wet");
-  const pumpAt = word(q, "e1", "نشغّل", 1, 0.13);
-  const steady = word(q, "e1", "ونثبّت", 1, 0.21);
-  const rStart = word(q, "e1", "ونكرر", 1, 0.38);
-  const confirm = word(q, "e1", "وتُؤكَّد", 1, 0.65);
+  const pumpAt = word(q, "e1", "نشغل", 1, 0.25);
+  const steady = word(q, "e1", "ونثبت", 1, 0.45);
+  const rStart = word(q, "e1", "نكرر", 1, 0.7);
+  const confirm = q.s.e2;
   const water = ramp(f, pumpAt, pumpAt + 40, 0, 1);
-  const each = (q.e.e1 + 30 - rStart) / 6;
+  const each = (q.end + 8 - rStart) / 6; // 6th reading is recorded before the scene ends
   const rs = readingState(f, rStart, each);
   const air = f < rStart ? 0 : rs.air;
   const dh = air > 0.01 ? 28 + 175 * Math.pow(air, 1.9) : 0;
