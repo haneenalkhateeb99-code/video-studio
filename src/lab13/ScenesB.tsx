@@ -94,7 +94,7 @@ export const ManometerScene: React.FC = () => {
   const M = {
     p: q.s.m2,
     big: word(q, "m2", "أكبر", 1, 0.35),
-    dh: word(q, "m2", "دلتا", 1, 0.8),
+    dh: word(q, "m2", "المنسوب", 1, 0.8),
     dp: q.s.m3,
     unit: word(q, "m3", "بالمتر", 1, 0.9),
   };
@@ -280,7 +280,7 @@ export const CurvesScene: React.FC = () => {
   const K = {
     wet: q.s.c2,
     rise: word(q, "c2", "ويرتفع", 1, 0.6),
-    load: word(q, "c2", "لودينغ", 1, 0.9),
+    load: word(q, "c2", "Loading", 1, 0.9),
   };
   const pDry = ramp(f, q.s.c1, q.s.c1 + 90, 0.001, 1);
   const pWet = ramp(f, K.wet - 10, K.wet + 80, 0.001, 1);

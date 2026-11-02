@@ -115,10 +115,10 @@ export const DiagramScene: React.FC = () => {
     word(q, "d1", "Rashig", 1, 0.7),
     word(q, "d2", "خزان", 1, 0.15),
     word(q, "d2", "ومضخة", 1, 0.3),
-    word(q, "d2", "Water", 1, 0.45),
-    word(q, "d2", "Distributor", 1, 0.75),
-    word(q, "d3", "Air", 1, 0.4),
-    word(q, "d3", "يو", 1, 0.7),
+    word(q, "d2", "Water", 1, 0.55),
+    word(q, "d2", "distributor", 1, 0.85),
+    word(q, "d3", "Air", 1, 0.2),
+    word(q, "d3", "U-tube", 1, 0.8),
   ].map((x) => x - 6);
   const vis: Partial<Record<Part, number>> = {};
   PARTS.forEach((p, i) => (vis[p.key] = appear(f, starts[i], 22)));
@@ -188,7 +188,7 @@ export const FlowScene: React.FC = () => {
     top: word(q, "w1", "أعلى", 1, 0.35),
     down: word(q, "w1", "ينزل", 1, 0.6),
     air: word(q, "w2", "يصعد", 1, 0.1),
-    cc: word(q, "w2", "Counter", 1, 0.65),
+    cc: word(q, "w2", "Countercurrent", 1, 0.7),
     rings: q.s.w3,
   };
   const water = ramp(f, W.pump, W.pump + 40, 0, 1);

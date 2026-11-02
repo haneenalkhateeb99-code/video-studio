@@ -9,7 +9,7 @@
 |---|---|
 | `src/Root.tsx` | سجلّ الفيديوهات: كل فيديو مسجَّل فيه كـ `<Composition>` (المعرّف والمدة والأبعاد) |
 | `src/HelloWorld.tsx` | الفيديو التجريبي (5 ثوانٍ، 1920×1080، 30 إطارًا في الثانية) |
-| `src/PackedColumnLab.tsx` + `src/lab13/` | فيديو تجربة CMET205 Lab 13 (هبوط الضغط في عمود محشو) — المعرّف `PackedColumnLab13`، الناتج الصامت `out/packed-column-pressure-drop-lab13.mp4`، والنسخة بالتعليق الصوتي `out/packed-column-pressure-drop-lab13-voiceover.mp4`. نص التعليق في `docs/lab13-narration-script.md`، والصوت في `public/lab13/vo/` (يُولَّد بـ `scripts/lab13-tts.py`) |
+| `src/PackedColumnLab.tsx` + `src/lab13/` | فيديو تجربة CMET205 Lab 13 (هبوط الضغط في عمود محشو) — المعرّف `PackedColumnLab13`، الناتج الصامت `out/packed-column-pressure-drop-lab13.mp4`، والنسخة بالتعليق الصوتي `out/packed-column-pressure-drop-lab13-voiceover.mp4`. نص التعليق في `docs/lab13-narration-script.md`، والصوت في `public/lab13/vo/` (يُولَّد بـ `scripts/lab13-tts.py`؛ مدة النسخة الصوتية 2:27، شرح عربي بصوت عربي والمصطلحات بصوت إنجليزي) |
 | `src/fonts.ts` | تحميل خط Cairo (عربي + لاتيني) من الملفات المحلية |
 | `public/` | الأصول: خطوط وصور وأصوات تُستدعى بـ `staticFile()` |
 | `out/` | ملفات MP4 المُصدَّرة (محفوظة في المستودع لتتمكن من تنزيلها) |

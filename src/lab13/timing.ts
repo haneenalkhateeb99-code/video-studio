@@ -36,7 +36,7 @@ export const at = (q: Cues, id: string, frac: number) => Math.round(q.s[id] + (q
 
 const words = WORDS as unknown as Record<string, [number, string][]>;
 
-const strip = (x: string) => x.replace(/[\u064B-\u065F\u0670\u0640]/g, "");
+const strip = (x: string) => x.replace(/[\u064B-\u065F\u0670\u0640.,،:;]/g, "").toLowerCase();
 
 /** Frame at which `needle` is spoken in the scene (searched in clip `id` first, then in all
  *  clips of the scene; tashkeel is ignored). Falls back to a fraction of clip `id` when no
