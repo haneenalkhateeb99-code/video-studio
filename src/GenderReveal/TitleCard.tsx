@@ -1,6 +1,5 @@
 import React from "react";
-import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
-import { BigFlorals, PaperBackground } from "./Decor";
+import { AbsoluteFill, Easing, Img, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { BODY_FONT, C, TITLE_FONT } from "./theme";
 
 // Word-by-word soft reveal (Arabic: animate words, never letters).
@@ -83,8 +82,10 @@ export const TitleCard: React.FC<{ title: string; subtitle?: string; titleSize?:
   const zoom = interpolate(frame, [0, durationInFrames], [1, 1.04]);
   return (
     <AbsoluteFill>
-      <PaperBackground />
-      <BigFlorals />
+      <Img
+        src={staticFile("gender-reveal-layers/card.png")}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", scale: String(1 + (zoom - 1) * 0.5) }}
+      />
       <AbsoluteFill
         style={{ justifyContent: "center", alignItems: "center", flexDirection: "column", scale: String(zoom) }}
       >

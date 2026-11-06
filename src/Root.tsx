@@ -1,6 +1,7 @@
 import { Composition } from "remotion";
 import { HelloWorld } from "./HelloWorld";
 import { GenderReveal, GENDER_REVEAL_FRAMES } from "./GenderReveal/GenderReveal";
+import { Layers } from "./GenderReveal/Layers";
 
 // Every video is registered here as a <Composition>.
 // To render one: npx remotion render <id> out/<name>.mp4
@@ -26,6 +27,15 @@ export const RemotionRoot: React.FC = () => {
         fps={30}
         width={1920}
         height={1080}
+      />
+      <Composition
+        id="GenderRevealLayers"
+        component={Layers}
+        durationInFrames={1}
+        fps={30}
+        width={1920}
+        height={1080}
+        defaultProps={{ layer: "bg" as "bg" | "frame" | "card" }}
       />
     </>
   );

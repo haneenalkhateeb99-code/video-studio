@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
 import { Audio, Video } from "@remotion/media";
-import { AbsoluteFill, Easing, interpolate, Sequence, staticFile, useCurrentFrame } from "remotion";
+import { AbsoluteFill, Easing, Img, interpolate, Sequence, staticFile, useCurrentFrame } from "remotion";
 import edl from "./edl.json";
-import { FrameDecor, MarginFlorals, PaperBackground, Window } from "./Decor";
+import { Window } from "./Decor";
 import { TitleCard } from "./TitleCard";
 import "./theme";
 
@@ -147,12 +147,23 @@ const useMusicCurve = () =>
     return sm;
   }, []);
 
+// Pre-rendered watercolor paper (see scripts/gender-reveal/layers.sh) with a very slow breathing zoom.
+const Backdrop: React.FC = () => {
+  const f = useCurrentFrame();
+  const scale = 1.015 + Math.sin(f / 240) * 0.012;
+  return (
+    <Img
+      src={staticFile("gender-reveal-layers/bg.png")}
+      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", scale: String(scale) }}
+    />
+  );
+};
+
 export const GenderReveal: React.FC = () => {
   const curve = useMusicCurve();
   return (
     <AbsoluteFill style={{ backgroundColor: "#FBF6EE" }}>
-      <PaperBackground />
-      <MarginFlorals />
+      <Backdrop />
       {ITEMS.map((it, i) =>
         it.type === "shot" ? (
           <Sequence key={it.id} name={it.id} from={it.start} durationInFrames={it.frames} premountFor={30}>
@@ -160,7 +171,7 @@ export const GenderReveal: React.FC = () => {
           </Sequence>
         ) : null,
       )}
-      <FrameDecor />
+      <Img src={staticFile("gender-reveal-layers/frame.png")} style={{ position: "absolute", inset: 0 }} />
       {ITEMS.map((it, i) =>
         it.type === "card" ? (
           <Sequence key={it.id} name={it.id} from={it.start} durationInFrames={it.frames}>
