@@ -30,8 +30,8 @@ LEVELS = {
     "suspense": (0.12, 1.00),
     "reveal": (0.05, 1.00),
     "react": (0.08, 1.00),
-    "hug": (0.42, 0.00),
-    "after": (0.45, 0.25),
+    "hug": (0.70, 0.00),
+    "after": (0.62, 0.18),
 }
 
 # trans = transition INTO this shot: "fade" (soft dissolve) or "cut" (hard cut, used in the synced multicam reveal)
@@ -163,9 +163,11 @@ def music():
     if os.path.exists(out):
         return out
     src = sys.argv[sys.argv.index("--music") + 1]
-    # Even out the very quiet opening of the live recording; no hard limiting.
-    af = "acompressor=threshold=-30dB:ratio=2.5:attack=200:release=1500:makeup=6,loudnorm=I=-18:TP=-2:LRA=8"
-    run(["ffmpeg", "-v", "error", "-y", "-i", src, "-vn", "-t", "200", "-af", af, "-ar", "48000", "-c:a", "aac", "-b:a", "192k", out])
+    start = sys.argv[sys.argv.index("--music-start") + 1] if "--music-start" in sys.argv else "0"
+    # The song is already mastered; only bring it to a consistent loudness.
+    af = "loudnorm=I=-18:TP=-2:LRA=11"
+    run(["ffmpeg", "-v", "error", "-y", "-ss", start, "-i", src, "-vn", "-t", "200", "-af", af,
+         "-ar", "48000", "-c:a", "aac", "-b:a", "192k", out])
     return out
 
 
@@ -218,7 +220,7 @@ def main():
 
 
 def music_onsets():
-    """Strong piano onsets (in timeline frames) of music.m4a, which starts at frame 0."""
+    """Strong musical onsets (in timeline frames) of music.m4a, which starts at frame 0."""
     import numpy as np
     m = os.path.join(OUT, "music.m4a")
     if not os.path.exists(m):
