@@ -1,5 +1,6 @@
 import { Composition } from "remotion";
 import { HelloWorld } from "./HelloWorld";
+import { GenderReveal, GENDER_REVEAL_FRAMES } from "./GenderReveal/GenderReveal";
 
 // Every video is registered here as a <Composition>.
 // To render one: npx remotion render <id> out/<name>.mp4
@@ -17,6 +18,14 @@ export const RemotionRoot: React.FC = () => {
           title: "مرحبًا من Remotion",
           subtitle: "اختبار الإعداد · Video Studio",
         }}
+      />
+      <Composition
+        id="GenderReveal"
+        component={GenderReveal}
+        durationInFrames={GENDER_REVEAL_FRAMES}
+        fps={30}
+        width={1920}
+        height={1080}
       />
     </>
   );

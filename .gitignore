@@ -1,3 +1,6 @@
 node_modules/
 .DS_Store
 # Rendered videos live in out/; tracked on purpose so you can download them from GitHub.
+
+# Gender-reveal intermediates (rebuilt from the Drive originals by scripts/gender-reveal/build.py)
+public/gender-reveal/
